@@ -10,7 +10,6 @@ import {
   Profile,
   Saved,
   UpdateProfile,
-  LikedPosts,
 } from "./_root/pages";
 import SignIn from "./_auth/forms/SignIn";
 import SignUp from "./_auth/forms/SignUp";
