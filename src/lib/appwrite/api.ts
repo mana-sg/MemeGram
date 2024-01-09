@@ -205,16 +205,20 @@ export async function likedPost(postId: string, likesArray: string[]) {
 
 export async function savedPost(postId: string, userId: string) {
   try {
+    console.log("postId:", postId);
+    console.log("userId:", userId);
     const updatedPost = await database.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.savesCollectionId,
       ID.unique(),
       {
-        user: userId,
-        post: postId,
+        user: postId,
+        post: userId,
       }
     );
-    if (!updatedPost) throw Error;
+
+    console.log("Response from createDocument:", updatedPost);
+    if (!updatedPost.user) throw Error;
 
     return updatedPost;
   } catch (error) {
@@ -228,9 +232,10 @@ export async function deleteSavedPost(savedRecordId: string) {
       appwriteConfig.savesCollectionId,
       savedRecordId
     );
+
     if (!statusCode) throw Error;
 
-    return { statusCode: "ok" };
+    return { status: "Ok" };
   } catch (error) {
     console.log(error);
   }
