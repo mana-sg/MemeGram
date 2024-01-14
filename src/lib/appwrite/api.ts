@@ -1,4 +1,4 @@
-import { INewPost, INewUser } from "@/types";
+import { INewPost, INewUser, IUpdatePost } from "@/types";
 import { ID, Query } from "appwrite";
 import { account, appwriteConfig, avatars, database, storage } from "./config";
 
@@ -239,4 +239,121 @@ export async function deleteSavedPost(savedRecordId: string) {
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function getPostById(postId: string) {
+  try {
+    const post = await database.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId,
+    )
+    return post;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function updatePost(post: IUpdatePost) {
+  const hasFileToUpdate = post.file.length > 0;
+  try {
+    let image = {
+      imageUrl: post.imageUrl,
+      imageId: post.imageId,
+    }
+
+    if (hasFileToUpdate) {
+
+      const uploadedFile = await uploadFile(post.file[0]);
+      if (!uploadedFile) throw Error;
+
+      const fileUrl = getFilePreview(uploadedFile.$id);
+      if (!fileUrl) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id }
+
+    }
+
+    const tags = post.tags?.replace(/ /g, "").split(",") || [];
+
+    const updatedPost = await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      post.postId,
+      {
+        caption: post.caption,
+        imageUrl: image.imageUrl,
+        imageId: image.imageId,
+        location: post.location,
+        tags: tags,
+      }
+    );
+
+    if (!updatedPost) {
+      await deleteFile(post.imageId);
+      throw Error;
+    }
+
+    return updatedPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deletePost(postId: string, imageId: string) {
+  if (!postId || !imageId) throw Error;
+
+  try {
+    await database.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId
+    )
+
+    return { status: "ok" }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
+  const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
+
+  if (pageParam) {
+    queries.push(Query.cursorAfter(pageParam.toString()))
+  }
+
+  try {
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      queries
+    )
+
+    if (!posts) throw Error
+
+    return posts
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function searchPosts(searchterm: string) {
+  try {
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.search('caption', searchterm)]
+    )
+
+    if (!posts) throw Error
+
+    return posts;
+  } catch (error) {
+    console.log(error)
+  }
+
 }
