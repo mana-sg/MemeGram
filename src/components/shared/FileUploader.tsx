@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useCallback, useState } from "react";
 import { useDropzone, FileWithPath } from "react-dropzone";
 import { Button } from "../ui/button";
@@ -9,7 +10,7 @@ type FileUploaderProps = {
 
 const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
   const [fileUrl, setFileUrl] = useState(mediaUrl);
-  const [file, setFile] = useState<FileWithPath[]>([]);
+  const [_file, setFile] = useState<FileWithPath[]>([]);
 
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
@@ -17,7 +18,7 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
       fieldChange(acceptedFiles);
       setFileUrl(URL.createObjectURL(acceptedFiles[0]));
     },
-    [file]
+    [fieldChange]
   );
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,

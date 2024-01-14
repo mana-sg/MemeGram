@@ -246,11 +246,11 @@ export async function getPostById(postId: string) {
     const post = await database.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      postId,
-    )
+      postId
+    );
     return post;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
@@ -260,10 +260,9 @@ export async function updatePost(post: IUpdatePost) {
     let image = {
       imageUrl: post.imageUrl,
       imageId: post.imageId,
-    }
+    };
 
     if (hasFileToUpdate) {
-
       const uploadedFile = await uploadFile(post.file[0]);
       if (!uploadedFile) throw Error;
 
@@ -272,8 +271,7 @@ export async function updatePost(post: IUpdatePost) {
         await deleteFile(uploadedFile.$id);
         throw Error;
       }
-      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id }
-
+      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
     }
 
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
@@ -310,19 +308,19 @@ export async function deletePost(postId: string, imageId: string) {
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       postId
-    )
+    );
 
-    return { status: "ok" }
+    return { status: "ok" };
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
-  const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
+  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(10)];
 
   if (pageParam) {
-    queries.push(Query.cursorAfter(pageParam.toString()))
+    queries.push(Query.cursorAfter(pageParam.toString()));
   }
 
   try {
@@ -330,14 +328,13 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       queries
-    )
+    );
 
-    if (!posts) throw Error
+    if (!posts) throw Error;
 
-    return posts
-
+    return posts;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
@@ -346,14 +343,13 @@ export async function searchPosts(searchterm: string) {
     const posts = await database.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.search('caption', searchterm)]
-    )
+      [Query.search("caption", searchterm)]
+    );
 
-    if (!posts) throw Error
+    if (!posts) throw Error;
 
     return posts;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-
 }
